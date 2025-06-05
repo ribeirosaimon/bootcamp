@@ -21,13 +21,14 @@ type ClientsFile struct {
 }
 
 func (cf ClientsFile) Save(c Client) (*Client, error) {
-	if _, ok := cf.Clients[c.Name]; ok {
+	if _, ok := cf.Clients[strconv.Itoa(int(c.Id))]; ok {
 		return nil, errors.New("this client already exists")
 	}
-	cf.Clients[c.Name] = &Client{
+	newClient := &Client{
 		Id: c.Id,
 	}
-	return cf.Clients[c.Name], nil
+	cf.Clients[strconv.Itoa(int(c.Id))] = newClient
+	return newClient, nil
 }
 
 var (
