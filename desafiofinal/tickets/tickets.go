@@ -18,7 +18,7 @@ var (
 type Ticket interface {
 	GetTotalTickets(destination string) (int, error)
 	GetCountryByPeriod(country string) (string, error)
-	AverageDestination(destination string, total int) (int error)
+	AverageDestination(destination string, total int) (int, error)
 }
 type repository struct {
 	filePath string
@@ -110,6 +110,11 @@ func (t *repository) GetCountryByPeriod(country string) (string, error) {
     `, startMorn, mornCount, afternoonCount, nightCount), nil
 }
 
-func (t *repository) AverageDestination(destination string, total int) (int error) {
-	panic("implement me")
+func (t *repository) AverageDestination(destination string, total int) (int, error) {
+	period, err := t.GetTotalTickets(destination)
+	if err != nil {
+		return 0, err
+	}
+	result := float64(period) / float64(total)
+	return int(result * 100), nil
 }

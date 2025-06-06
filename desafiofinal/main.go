@@ -2,17 +2,18 @@ package main
 
 import "github.com/ribeirosaimon/bootcamp/desafiofinal/tickets"
 
-type desafioFinal struct {
+type desafioFinalServer struct {
 	repository tickets.Ticket
 }
 
-func main() {
-	v := desafioFinal{
-		repository: tickets.NewRepository(),
-	}
+var server = desafioFinalServer{
+	repository: tickets.NewRepository(),
+}
 
-	// aqui posso fazer um looping infinito recebendo o valor de um cli
-	v.repository.GetTotalTickets("brazil")
-	v.repository.AverageDestination("brazil", 123)
-	v.repository.AverageDestination("brazil", 1)
+func main() {
+	// aqui posso fazer um looping infinito recebendo o valor como um cli
+	country := "brazil"
+	server.repository.GetTotalTickets(country)
+	server.repository.GetCountryByPeriod(country)
+	server.repository.AverageDestination(country, 1)
 }

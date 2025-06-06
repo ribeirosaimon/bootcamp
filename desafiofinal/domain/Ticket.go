@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-type TickerRepository interface {
-}
 type Ticket struct {
 	Id          int64     `json:"id"`
 	Name        string    `json:"name"`

@@ -1,8 +1,10 @@
 package tickets_test
 
 import (
+	"errors"
 	"fmt"
 	"github.com/ribeirosaimon/bootcamp/desafiofinal/tickets"
+	"strconv"
 	"testing"
 )
 
@@ -50,12 +52,41 @@ func TestGetTotalTickets(t *testing.T) {
 			},
 		},
 		{
-			name:  "TestGetCountryByPeriod need return error",
-			isErr: true,
+			name: "TestGetCountryByPeriod need return error",
 			auxFunc: func() error {
-				_, err := repository.GetCountryByPeriod("china")
+				res, err := repository.GetCountryByPeriod("chasina")
 				if err != nil {
 					return err
+				}
+				if res != "\n        Início da Manhã: 0\n        Manhã: 0\n        Tarde: 0\n        Noite: 0\n    " {
+					return fmt.Errorf("expected empty string, got %s", res)
+				}
+				return nil
+			},
+		},
+		{
+			name: "AverageDestination",
+			auxFunc: func() error {
+				res, err := repository.AverageDestination("china", 10)
+				if err != nil {
+					return err
+				}
+				if res != 30 {
+					return errors.New("expected 30 tickets, got " + strconv.Itoa(res))
+				}
+				return nil
+			},
+		},
+		{
+			name:  "AverageDestination need return error",
+			isErr: true,
+			auxFunc: func() error {
+				res, err := repository.AverageDestination("chasina", 10)
+				if err != nil {
+					return err
+				}
+				if res != 30 {
+					return errors.New("expected 30 tickets, got " + strconv.Itoa(res))
 				}
 				return nil
 			},
