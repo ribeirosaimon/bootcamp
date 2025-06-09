@@ -1,61 +1,41 @@
 package main
 
 import (
-	"errors"
-	"fmt"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/ribeirosaimon/bootcamp/aula03/ex01/handler"
+	"github.com/ribeirosaimon/bootcamp/aula04/ex01/health"
+	"github.com/ribeirosaimon/bootcamp/aula04/ex01/product"
+	"net/http"
 )
 
-type Product struct {
-	ID           uint
-	Price        uint
-	Category     uint
-	Name         string
-	Descriptions string
-}
-type Products struct {
-	product []Product
+type server struct {
+	productHandler product.Handler
+	healthHandler  health.Handler
 }
 
-func (p *Products) AddProduct(product Product) {
-	p.product = append(p.product, product)
-}
-
-func (p *Products) GetAllProducts() []Product {
-	return p.product
-}
-
-func (p *Products) GetProductByID(id uint) (Product, error) {
-	for _, product := range p.product {
-		if product.ID == id {
-			return product, nil
-		}
+func NewServer(productHandler handler.Product, healthHandler handler.Health) *server {
+	return &server{
+		productHandler: productHandler,
+		healthHandler:  healthHandler,
 	}
-	return Product{}, errors.New("not found")
-}
-
-var products = Products{
-	product: []Product{
-		{
-			ID:           1,
-			Price:        100,
-			Category:     2,
-			Name:         "Livro",
-			Descriptions: "Um livro interessante",
-		},
-		{
-			ID:           2,
-			Price:        50,
-			Category:     3,
-			Name:         "Caneta",
-			Descriptions: "Para escrever",
-		},
-	},
 }
 
 func main() {
-	product, err := products.GetProductByID(1)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(product)
+	api := chi.NewRouter()
+	api.Use(middleware.Logger)
+	api.Use(middleware.Recoverer)
+
+	srv := NewServer(handler.NewProduct(product.NewRepository()), handler.NewHealth())
+
+	api.Get("/ping", srv.healthHandler.Ping)
+
+	api.Route("/products", func(r chi.Router) {
+		r.Get("/", srv.productHandler.GetProductById)
+		r.Get("/{id}", srv.productHandler.GetProductById)
+		r.Get("/search", srv.productHandler.SearchProducts)
+		r.Post("/", srv.productHandler.SaveProduct)
+	})
+
+	http.ListenAndServe(":8080", api)
 }

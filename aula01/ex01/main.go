@@ -1,11 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 func main() {
-	var (
-		nome     = "Saimon"
-		endereco = "Florianópolis"
-	)
-	fmt.Printf("%s, %s", nome, endereco)
+	http.HandleFunc("/ping", func(writer http.ResponseWriter, request *http.Request) {
+		if err := json.NewEncoder(writer).Encode("pong"); err != nil {
+			json.NewEncoder(writer).Encode("error")
+		}
+	})
+	http.ListenAndServe(":8080", nil)
 }

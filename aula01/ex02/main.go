@@ -1,17 +1,30 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
+	"net/http"
 )
 
 func main() {
 
-	var (
-		temp  = float32(11.2)
-		umi   = uint(98)
-		press = float32(12.4)
-	)
+	http.HandleFunc("/greetings", func(writer http.ResponseWriter, request *http.Request) {
 
-	fmt.Printf("%f, %d, %f", temp, umi, press)
+		if request.Method == "POST" {
+			type myStruct struct {
+				FirstName string `json:"firstName"`
+				LastName  string `json:"lastName"`
+			}
+			marshal, err := json.Marshal(myStruct{
+				FirstName: request.FormValue("firstName"),
+				LastName:  request.FormValue("lastName"),
+			})
 
+			if err != nil {
+				writer.Write([]byte(err.Error()))
+			}
+			writer.Write(marshal)
+		}
+
+	})
+	http.ListenAndServe(":8080", nil)
 }
