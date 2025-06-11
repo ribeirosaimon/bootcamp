@@ -3,8 +3,8 @@ package product
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"github.com/ribeirosaimon/bootcamp/aula05/ex01/domain/entity"
+	"github.com/ribeirosaimon/bootcamp/aula05/ex01/internal/apperror"
+	"github.com/ribeirosaimon/bootcamp/aula05/ex01/internal/domain/entity"
 
 	"os"
 )
@@ -56,7 +56,7 @@ func (r *repository) GetById(id int) (entity.Product, error) {
 		return *res, nil
 	}
 
-	return entity.Product{}, errors.New("product not found")
+	return entity.Product{}, apperror.NewAppErrorNotFound()
 }
 
 func (r *repository) GetByPriceGt(value float64) []entity.Product {
@@ -78,7 +78,7 @@ func (r *repository) Save(product *entity.Product) error {
 
 func (r *repository) Update(product *entity.Product) error {
 	if _, ok := r.data[product.Id]; !ok {
-		return errors.New("product not found")
+		return apperror.NewAppErrorNotFound()
 	}
 	r.data[product.Id] = product
 	return nil

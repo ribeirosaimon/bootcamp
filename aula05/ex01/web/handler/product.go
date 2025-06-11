@@ -3,8 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"github.com/ribeirosaimon/bootcamp/aula05/ex01/domain/entity"
-	"github.com/ribeirosaimon/bootcamp/aula05/ex01/product"
+	"github.com/ribeirosaimon/bootcamp/aula05/ex01/internal/apperror"
+	"github.com/ribeirosaimon/bootcamp/aula05/ex01/internal/domain/entity"
+	"github.com/ribeirosaimon/bootcamp/aula05/ex01/internal/product"
 	"net/http"
 	"strconv"
 )
@@ -31,12 +32,14 @@ func (p *productHandler) GetProductById(w http.ResponseWriter, r *http.Request) 
 	urlId := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(urlId)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		apperror.NewError(err).Build(w)
+		return
 	}
 
 	pdt, err := p.productService.GetById(id)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		apperror.NewError(err).Build(w)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(pdt)
@@ -53,12 +56,14 @@ func (p *productHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	} else {
 		quantityOfItems, err = strconv.Atoi(qtdItemsParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			apperror.NewError(err).Build(w)
+			return
 		}
 	}
 	products, err := p.productService.Get(quantityOfItems)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		apperror.NewError(err).Build(w)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(products)

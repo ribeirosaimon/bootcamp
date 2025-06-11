@@ -1,8 +1,12 @@
+//go:generate mockgen -source=service.go -destination=mocks/service_mock.go -package=mocks
+
 package product
 
 import (
-	"github.com/ribeirosaimon/bootcamp/aula05/ex01/domain/entity"
-	"strings"
+	"errors"
+	"github.com/ribeirosaimon/bootcamp/aula07/ex01/internal/domain/dto"
+	"github.com/ribeirosaimon/bootcamp/aula07/ex01/internal/domain/entity"
+	"strconv"
 )
 
 type service struct {
@@ -17,6 +21,7 @@ type Service interface {
 	Save(product *entity.Product) error
 	Update(product *entity.Product) error
 	Delete(id int) error
+	ConsumerPrice(ids []string) (dto.ConsumerPrice, error)
 }
 
 func NewService(productRepository Repository) *service {
@@ -61,9 +66,41 @@ func (s *service) Delete(id int) error {
 	return s.productRepository.Delete(id)
 }
 
-func capitalizeFirst(s string) string {
-	if len(s) == 0 {
-		return s
+func (s *service) ConsumerPrice(ids []string) (dto.ConsumerPrice, error) {
+	newIds := make([]int, 0, len(ids))
+	for _, id := range ids {
+		atoi, err := strconv.Atoi(id)
+		if err != nil {
+			return dto.ConsumerPrice{}, err
+		}
+		newIds = append(newIds, atoi)
 	}
-	return strings.ToUpper(s[:1]) + s[1:]
+
+	products, err := s.productRepository.GetByIdsAndCount(newIds)
+	if err != nil {
+		return dto.ConsumerPrice{}, err
+	}
+
+	var total float64
+	productEntities := make([]entity.Product, 0, len(products))
+	for _, product := range products {
+		total += float64(product.ConsumerQuantity) * product.Product.Price
+		productEntities = append(productEntities, *product.Product)
+	}
+
+	switch {
+	case len(newIds) > 10:
+		total *= 1.21
+	case len(newIds) > 10 && len(newIds) > 20:
+		total *= 1.17
+	case len(newIds) > 30:
+		total *= 1.15
+	default:
+		return dto.ConsumerPrice{}, errors.New("no product found")
+	}
+
+	return dto.ConsumerPrice{
+		Products:   productEntities,
+		TotalPrice: total,
+	}, nil
 }
