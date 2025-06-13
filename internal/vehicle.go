@@ -44,3 +44,15 @@ type Vehicle struct {
 	// VehicleAttribue is the attributes of a vehicle
 	VehicleAttributes
 }
+
+type VehicleFilter struct {
+	Color string `json:"color"`
+	Year  int    `json:"year"`
+	Brand string
+	PairDates
+}
+
+type PairDates struct {
+	Start int
+	End   int
+}

@@ -57,6 +57,7 @@ func (a *ServerChi) Run() (err error) {
 	if err != nil {
 		return
 	}
+
 	// - repository
 	rp := repository.NewVehicleMap(db)
 	// - service
@@ -71,7 +72,21 @@ func (a *ServerChi) Run() (err error) {
 	// - endpoints
 	rt.Route("/vehicles", func(rt chi.Router) {
 		// - GET /vehicles
-		rt.Get("/", hd.GetAll())
+		rt.Get("/{id}", hd.FindByID())
+		//rt.Get("/", hd.GetAll())
+		rt.Post("/", hd.Save())
+		rt.Get("/", hd.GetVehicleByColorAndYear())
+		rt.Get("/brand/{brand}/between/{start_year}/{end_year}", hd.GetVehicleByBrandAndYear())
+		rt.Get("/average_speed/brand/{brand}", hd.GetAverageSpeed())
+		rt.Post("/batch", hd.SaveMany())
+		rt.Put("/{id}/update_speed", hd.UpdateSpeed())
+		rt.Get("/fuel_type/{type}", hd.GetVehicleByFuelType())
+		rt.Delete("/{id}", hd.DeleteVehicle())
+		rt.Get("/transmission/{type}", hd.GetVehicleByTransmission())
+		rt.Put("/{id}/update_fuel", hd.UpdateFuel())
+		rt.Get("/average_capacity/brand/{brand}", hd.GetAverageCapacity())
+		rt.Get("/dimensions", hd.SearchVehicleByDimensions())
+		rt.Get("/weight", hd.SearchVehicleByWeight())
 	})
 
 	// run server
