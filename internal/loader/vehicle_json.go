@@ -37,6 +37,29 @@ type VehicleJSON struct {
 	Width           float64 `json:"width"`
 }
 
+func (v *VehicleJSON) ToDomain() internal.Vehicle {
+	return internal.Vehicle{
+		Id: v.Id,
+		VehicleAttributes: internal.VehicleAttributes{
+			Brand:           v.Brand,
+			Model:           v.Model,
+			Registration:    v.Registration,
+			Color:           v.Color,
+			FabricationYear: v.FabricationYear,
+			Capacity:        v.Capacity,
+			MaxSpeed:        v.MaxSpeed,
+			FuelType:        v.FuelType,
+			Transmission:    v.Transmission,
+			Weight:          v.Weight,
+			Dimensions: internal.Dimensions{
+				Height: v.Height,
+				Width:  v.Width,
+				Length: v.Length,
+			},
+		},
+	}
+}
+
 // Load is a method that loads the vehicles
 func (l *VehicleJSONFile) Load() (v map[int]internal.Vehicle, err error) {
 	// open file

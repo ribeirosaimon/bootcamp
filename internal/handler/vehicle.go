@@ -2,9 +2,9 @@ package handler
 
 import (
 	"github.com/ribeirosaimon/bootcamp/internal"
+	"github.com/ribeirosaimon/bootcamp/web"
+	"github.com/ribeirosaimon/bootcamp/web/apierr"
 	"net/http"
-
-	"github.com/bootcamp-go/web/response"
 )
 
 // VehicleJSON is a struct that represents a vehicle in JSON format
@@ -46,7 +46,7 @@ func (h *VehicleDefault) GetAll() http.HandlerFunc {
 		// - get all vehicles
 		v, err := h.sv.FindAll()
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, nil)
+			apierr.NewApiErr(apierr.NewBadRequestApiErr(), w)
 			return
 		}
 
@@ -70,9 +70,10 @@ func (h *VehicleDefault) GetAll() http.HandlerFunc {
 				Width:           value.Width,
 			}
 		}
-		response.JSON(w, http.StatusOK, map[string]any{
-			"message": "success",
-			"data":    data,
-		})
+		web.NewResponse(
+			web.WithData(data),
+			web.WithStatus(http.StatusOK),
+		)
+
 	}
 }
