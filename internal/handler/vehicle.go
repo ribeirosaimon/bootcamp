@@ -1,13 +1,10 @@
 package handler
 
 import (
-	"encoding/json"
-	"github.com/go-chi/chi/v5"
 	"github.com/ribeirosaimon/bootcamp/internal"
 	"github.com/ribeirosaimon/bootcamp/web"
 	"github.com/ribeirosaimon/bootcamp/web/apierr"
 	"net/http"
-	"strconv"
 )
 
 // VehicleJSON is a struct that represents a vehicle in JSON format
@@ -101,47 +98,5 @@ func (h *VehicleDefault) GetAll() http.HandlerFunc {
 			web.WithStatus(http.StatusOK),
 		)
 
-	}
-}
-
-func (h *VehicleDefault) FindById() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		idString := chi.URLParam(r, "id")
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			apierr.NewApiErr(apierr.NewBadRequestApiErr(), w)
-			return
-		}
-		v, err := h.sv.FindById(id)
-		if err != nil {
-			apierr.NewApiErr(err, w)
-			return
-		}
-		web.NewResponse(
-			web.WithData(v),
-			web.WithStatus(http.StatusOK),
-		).Build(w)
-	}
-}
-
-func (h *VehicleDefault) SaveMany() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var vehicles []VehicleJSON
-		if err := json.NewDecoder(r.Body).Decode(&vehicles); err != nil {
-			apierr.NewApiErr(apierr.NewBadRequestApiErr(), w)
-		}
-
-		vehiclesDomain := make([]internal.Vehicle, 0, len(vehicles))
-		for _, v := range vehicles {
-			vehiclesDomain = append(vehiclesDomain, v.ToDomain())
-		}
-		if err := h.sv.SaveMany(vehiclesDomain); err != nil {
-			apierr.NewApiErr(err, w)
-		}
-
-		web.NewResponse(
-			web.WithData(vehicles),
-			web.WithStatus(http.StatusCreated),
-		).Build(w)
 	}
 }
