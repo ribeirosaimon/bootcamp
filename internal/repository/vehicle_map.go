@@ -9,13 +9,18 @@ func NewVehicleMap(db map[int]internal.Vehicle) *VehicleMap {
 	if db != nil {
 		defaultDb = db
 	}
-	return &VehicleMap{db: defaultDb}
+
+	return &VehicleMap{
+		db:        defaultDb,
+		lastIndex: len(defaultDb),
+	}
 }
 
 // VehicleMap is a struct that represents a vehicle repository
 type VehicleMap struct {
 	// db is a map of vehicles
-	db map[int]internal.Vehicle
+	db        map[int]internal.Vehicle
+	lastIndex int
 }
 
 // FindAll is a method that returns a map of all vehicles
