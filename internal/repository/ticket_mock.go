@@ -6,28 +6,30 @@ import (
 )
 
 // NewRepositoryTicketMock creates a new repository for tickets in a map
-func NewRepositoryTicketMock() Ticket {
-	return &RepositoryTicketMock{}
+func NewRepositoryTicketMock() *repositoryTicketMock {
+	return &repositoryTicketMock{}
 }
 
 // RepositoryTicketMock implements the repository interface for tickets
-type RepositoryTicketMock struct {
+type repositoryTicketMock struct {
 	// FuncGet represents the mock for the Get function
 	FuncGet func() (t map[int]domain.Ticket, err error)
 	// FuncGetTicketsByDestinationCountry
-	FuncGetTicketsByDestinationCountry func(country string) (t map[int]domain.Ticket, err error)
+	FuncGetTicketsByDestinationCountry       func(ctx context.Context, country string) (t map[int]domain.Ticket, err error)
+	FuncGetTicketsAmountByDestinationCountry func(context.Context, string) (int, error)
 
 	// Spy verifies if the methods were called
 	Spy struct {
 		// Get represents the spy for the Get function
 		Get int
 		// GetTicketsByDestinationCountry represents the spy for the GetTicketsByDestinationCountry function
-		GetTicketsByDestinationCountry int
+		GetTicketsByDestinationCountry       int
+		GetTicketsAmountByDestinationCountry int
 	}
 }
 
-// GetAll returns all the tickets
-func (r *RepositoryTicketMock) Get(ctx context.Context) (t map[int]domain.Ticket, err error) {
+// Get returns all the tickets
+func (r *repositoryTicketMock) Get(ctx context.Context) (t map[int]domain.Ticket, err error) {
 	// spy
 	r.Spy.Get++
 
@@ -37,11 +39,20 @@ func (r *RepositoryTicketMock) Get(ctx context.Context) (t map[int]domain.Ticket
 }
 
 // GetTicketsByDestinationCountry returns the tickets filtered by destination country
-func (r *RepositoryTicketMock) GetTicketsByDestinationCountry(ctx context.Context, country string) (t map[int]domain.Ticket, err error) {
+func (r *repositoryTicketMock) GetTicketsByDestinationCountry(ctx context.Context, country string) (
+	t map[int]domain.Ticket, err error,
+) {
 	// spy
 	r.Spy.GetTicketsByDestinationCountry++
 
 	// mock
-	t, err = r.FuncGetTicketsByDestinationCountry(country)
+	t, err = r.FuncGetTicketsByDestinationCountry(ctx, country)
 	return
+}
+
+// GetTicketsAmountByDestinationCountry returns total of value
+func (r *repositoryTicketMock) GetTicketsAmountByDestinationCountry(ctx context.Context, country string) (total int, err error) {
+	r.Spy.GetTicketsAmountByDestinationCountry++
+	// mock
+	return r.FuncGetTicketsAmountByDestinationCountry(ctx, country)
 }

@@ -1,69 +1,63 @@
 package repository
 
 import (
-	"bytes"
 	"context"
-	"encoding/csv"
-	"fmt"
 	"github.com/ribeirosaimon/bootcamp/internal/domain"
-	"os"
+	"github.com/ribeirosaimon/bootcamp/internal/loader"
 )
 
-var (
-	fileName = "/docs/db/tickets.csv"
-)
-
-type Ticket interface {
-	Get(ctx context.Context) (t map[int]domain.Ticket, err error)
-	GetTicketsByDestinationCountry(ctx context.Context, country string) (t map[int]domain.Ticket, err error)
-}
-type repository struct {
-	filePath string
-	data     map[int]domain.Ticket
-}
-
-type ticketsOpt func(*repository)
-
-func WithFilePath(filePath string) ticketsOpt {
-	return func(r *repository) {
-		r.filePath = filePath
-	}
-}
-
-func NewRepository(opt ...ticketsOpt) *repository {
-	defaultRepository := repository{
-		filePath: fileName,
-	}
-	for _, o := range opt {
-		o(&defaultRepository)
-	}
-
-	file, err := os.ReadFile(defaultRepository.filePath)
+// NewTicket creates a new repository for tickets in a map
+func NewTicket(loader loader.TicketCSV) *ticketMap {
+	load, err := loader.Load()
 	if err != nil {
-		return nil
-	}
-	buf := bytes.NewBuffer(file)
-	reader := csv.NewReader(buf)
-
-	basicData := make(map[int]domain.Ticket)
-	for {
-		record, err := reader.Read()
-		if err != nil {
-			if err.Error() == "EOF" {
-				break
-			}
-			fmt.Println("Erro ao ler linha:", err)
-			break
-		}
-		var ticket domain.Ticket
-
-		if err = ticket.NormalizedTicket(record); err != nil {
-			return nil
-		}
-		basicData[ticket.Id] = ticket
-
+		panic(err)
 	}
 
-	defaultRepository.data = basicData
-	return &defaultRepository
+	return &ticketMap{
+		db:     load,
+		lastId: len(load),
+	}
+}
+
+// RepositoryTicketMap implements the repository interface for tickets in a map
+type ticketMap struct {
+	// db represents the database in a map
+	// - key: id of the ticket
+	// - value: ticket
+	db map[int]domain.Ticket
+
+	// lastId represents the last id of the ticket
+	lastId int
+}
+
+// Get returns all the tickets
+func (r *ticketMap) Get(ctx context.Context) (t map[int]domain.Ticket, err error) {
+	// create a copy of the map
+	t = make(map[int]domain.Ticket, len(r.db))
+	for k, v := range r.db {
+		t[k] = v
+	}
+
+	return
+}
+
+// GetTicketsByDestinationCountry returns the tickets filtered by destination country
+func (r *ticketMap) GetTicketsByDestinationCountry(ctx context.Context, country string) (t map[int]domain.Ticket, err error) {
+	// create a copy of the map
+	t = make(map[int]domain.Ticket)
+	for k, v := range r.db {
+		if v.Country == country {
+			t[k] = v
+		}
+	}
+
+	return
+}
+
+func (r *ticketMap) GetTicketsAmountByDestinationCountry(ctx context.Context, country string) (int, error) {
+	t, err := r.GetTicketsByDestinationCountry(ctx, country)
+	if err != nil {
+		return 0, err
+	}
+	return len(t), nil
 }

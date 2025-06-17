@@ -1,7 +1,7 @@
 package request_test
 
 import (
-	"app/platform/web/request"
+	"github.com/ribeirosaimon/bootcamp/web/request"
 	"io"
 	"net/http"
 	"strings"
